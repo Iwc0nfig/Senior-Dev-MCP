@@ -1,0 +1,25 @@
+{
+ "packet": "values-00-example",
+ "model": "claude-haiku",
+ "facts": [
+  {
+   "subject": "OrderTable.Status",
+   "fact_type": "value_label",
+   "value": "0",
+   "text": "Draft",
+   "citations": [
+    "Legacy/Legacy.Entities/Enums/OrderEnums.cs:12"
+   ]
+  },
+  {
+   "subject": "OrderTable.Status",
+   "fact_type": "value_label",
+   "value": "3",
+   "text": "Shipped",
+   "citations": [
+    "Legacy/Legacy.Entities/Enums/OrderEnums.cs:15",
+    "usp_rpt_orderjournal:88"
+   ]
+  }
+ ]
+}

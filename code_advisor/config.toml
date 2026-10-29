@@ -1,0 +1,101 @@
+# The ONLY place paths, limits, timeouts and server settings live.
+# Relative paths resolve against the folder holding this file, so the advisor
+# works wherever it is unpacked.  On a new machine only [paths] workspaces (and
+# the solution/website paths under it) normally changes.
+# Scripts read single values with:  python -m senior_dev_code.config get <section.key>
+
+[paths]
+workspaces      = "C:/src/workspaces"
+net48_solution  = "C:/src/workspaces/Legacy/Legacy.sln"
+net8_solution   = "C:/src/workspaces/Modern/Modern.sln"
+website_root    = "C:/src/workspaces/Legacy/App"
+index_dir       = ".index"
+roslyn_host_net48 = "roslyn-host/bin/Release/net48/RoslynHost.exe"
+roslyn_host_net8  = "roslyn-host/bin/Release/net8.0/RoslynHost.exe"
+netfx_ref_assemblies = "C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework/.NETFramework/v4.8"
+markup_codegen    = "markup-codegen/bin/Release/net48/MarkupCodegen.exe"
+# scripts/gen_aspnet_controls.ps1 reflects over System.Web*.dll here
+aspnet_controls_refdir = "C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework/.NETFramework/v4.7.2"
+
+[server]
+# python -m senior_dev_code / scripts/run.ps1.  NO authentication: 0.0.0.0
+# belongs on a trusted network only.  CLI flags override these.
+transport = "streamable-http"     # or "stdio" for a locally spawned client
+host      = "0.0.0.0"
+port      = 8400
+path      = "/mcp"
+instructions_file = "MCP_INSTRUCTIONS.md"   # the MCP instructions sent to clients
+
+[workspace]
+# Top-level folders of the workspace: net48_root = legacy side, net8_root = .NET 8 side.
+net48_root = "Legacy"
+net8_root  = "Modern"
+next_dir   = "Modern.Next"     # under net8_root: the "next" family in get_source_manifest
+
+[limits]
+roslyn_load_timeout_s   = 900     # cold solution load
+roslyn_query_timeout_s  = 45
+max_results_default     = 50      # default `max` of a tool not listed in [limits.tool_max]
+max_results_hard        = 500     # no tool returns more than this
+read_file_max_lines     = 400
+read_anchor_window      = 100     # read_file_range: lines read from an anchor when no line_end is given
+twin_max_hard           = 100     # find_migration_twin caps `max` here
+
+[limits.tool_max]
+# Default `max` per tool (what a client gets when it passes none).
+find_symbol          = 50
+find_references      = 100
+find_callers         = 100
+find_implementations = 100
+search_text          = 100
+get_dependency_graph = 300
+find_dead_code       = 100
+find_api_calls       = 200
+find_migration_twin  = 20
+find_control         = 8
+get_control_binding  = 200
+
+[timeouts]
+# Seconds.
+sqlite_read_s      = 30     # graph.db busy timeout, read-only connections
+sqlite_write_s     = 60     # graph.db busy timeout, the index pass
+roslyn_stop_wait_s = 5      # wait for a Roslyn host to exit
+roslyn_ping_s      = 10
+vswhere_s          = 60
+refasm_download_s  = 300    # download / signature check of one reference-assembly package
+
+[index]
+max_file_bytes = 2_000_000          # skip generated monsters above this; recorded, not silent
+search_glob_max_bytes = 20_000_000  # search_text with a path_glob searches its files up to this size
+
+[source_export]
+# get_source_manifest / read_source_batch
+max_file_bytes         = 2_097_152  # 2 MiB
+manifest_limit_default = 20
+manifest_limit_max     = 100
+batch_requests_max     = 20
+budget_default         = 8192
+budget_min             = 2048
+budget_max             = 65536
+
+[build]
+# scripts/build-workspace.py: restore + build the workspace copy, then ask
+# ASP.NET for every page's generated code.  Only this step writes inside the
+# workspace (bin/ and obj/); the indexer and the MCP server never do.
+configuration = "Debug"
+msbuild   = ""        # empty = find Visual Studio's MSBuild with vswhere
+parallel  = 0         # MSBuild processes per dependency level; 0 = CPU count
+timeout_s = 1800      # per project
+# .NET Framework reference assemblies for every version the projects target
+# (4.5 - 4.8.1), in the Microsoft.NETFramework.ReferenceAssemblies layout.  Used as
+# TargetFrameworkRootPath by the build AND the Roslyn load, so both see the same
+# framework.  Only 4.7.2+ ship with Visual Studio; without this, 86 projects compile
+# against nothing.
+# Empty (default) = <index_dir>/build/refasm, which build-workspace fills itself:
+# Microsoft's signed NuGet packages for 4.5 - 4.7.1, the installed targeting packs
+# for 4.7.2 - 4.8.1.  Set it only to use a folder of your own.
+target_framework_root = ""
+installed_ref_root = "C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework"
+vswhere            = "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+refasm_package_version = "1.0.3"
+refasm_url = "https://api.nuget.org/v3-flatcontainer/{id}/{v}/{id}.{v}.nupkg"

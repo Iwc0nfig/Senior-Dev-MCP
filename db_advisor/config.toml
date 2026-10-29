@@ -1,0 +1,104 @@
+# The only place paths, connection settings, timeouts, limits and server settings live.
+# Relative paths resolve against the directory holding this file.
+# Scripts read single values with:  python -m senior_dev_db.config get <section.key>
+
+[paths]
+# Empty = the Code Advisor's workspace ([code_advisor] root/config.toml), so both servers
+# index the same tree and C# citations (path:line) open with its read_file_range.
+workspaces     = ""
+index_dir      = ".index"
+curated_dir    = "knowledge/curated"
+examples_dir   = "../examples"
+sql_parser     = "sql-parser/bin/Release/net8.0/SqlParser.exe"
+code_extractor_net8  = "code-extractor/bin/Release/net8.0/CodeExtractor.exe"
+style_rules    = "knowledge/team_sql_style.md"   # the DB developers' rules; validate_sql lints against them
+eval_mask      = "tests/eval/mask.json"          # which objects each eval snapshot rolls back
+
+[server]
+# python -m senior_dev_db / scripts/run.ps1.  NO authentication: 0.0.0.0
+# belongs on a trusted network only.  CLI flags override these.
+transport = "streamable-http"     # or "stdio" for a locally spawned client
+host      = "0.0.0.0"
+port      = 8401
+path      = "/mcp"
+instructions_file = "MCP_INSTRUCTIONS.md"   # sent to clients; {{section.key}} is filled from this file
+
+[code_advisor]
+# The Senior-Dev-MCP Code Advisor this server complements: its folder (holds its config.toml)
+# and the URL its MCP endpoint answers on from this machine.  Empty url = localhost with
+# the port and path from <root>/config.toml [server].
+root = "../code_advisor"
+url  = ""
+
+[db]
+# Credentials come from env_file (URL, LOGIN, PASSWORDS); never from here.
+env_file = ".env"
+database = "appdb"
+driver   = "auto"   # newest installed of ODBC Driver 18 / 17 for SQL Server
+connect_timeout_s = 15
+query_timeout_s   = 120
+validate_timeout_s = 20
+# preview_query: lets an agent check the query it is writing (not a data browser) -- keep low
+preview_default_rows = 10
+preview_max_rows     = 50
+preview_timeout_s    = 15
+
+[timeouts]
+# Seconds unless the name says otherwise.
+live_check_s       = 3     # staleness check of the objects an answer cites
+index_status_s     = 5     # index_status: objects changed in appdb since the build
+live_definition_s  = 10    # get_object_definition(live=true), draft_change
+sandbox_status_s   = 5
+sandbox_connect_s  = 10
+sandbox_lock_wait_s = 60   # one test_sql run at a time; the next one waits this long
+sandbox_reset_s    = 30    # snapshot revert after a run
+sandbox_lock_timeout_ms = 5000
+profile_query_s    = 300   # prepare: one profiling query on appdb
+sqlite_read_s      = 30
+sqlite_write_s     = 60
+parser_check_s     = 60    # verify: do the C# parsers start
+
+[sandbox]
+# A clone of appdb (same schema, ~10 rows per table) on a SQL Server we fully own.
+# test_sql runs change scripts there inside a transaction that is always rolled back.
+# Build / rebuild it with scripts/sandbox.ps1.  Never point this at the real database.
+enabled  = true
+server   = "localhost"            # SQL Server Express default instance: "localhost/SQLEXPRESS"
+database = "appdb_sandbox"
+auth     = "windows"          # or "sql": SANDBOX_LOGIN / SANDBOX_PASSWORDS in the env file
+rows_per_table  = 10
+max_parent_rows = 2000        # cap on parent rows pulled in so foreign keys hold
+run_timeout_s   = 30
+result_max_rows = 20
+snapshot_name   = "appdb_sandbox_base"
+seed_max_rows    = 50         # test_sql from_live: target rows copied from appdb per run
+seed_max_related = 1000       # plus their child and parent rows
+max_from_live  = 8          # from_live: SELECTs per run
+max_join_checks  = 8          # inner joins checked for 'no matching pair'
+marker = "advisor_sandbox"   # extended property: a rebuild only drops a database carrying it
+runner = "sandbox_runner"     # the database user test_sql runs as
+
+[drafts]
+max_drafts        = 50
+ttl_s             = 7200
+long_script_lines = 200       # above this the exact diff (plus draft_id) is the hand-over, not the script
+
+[code]
+# What the code phase reads from the workspace.
+subdirs     = ["Legacy", "Modern"]
+web_configs = ["Legacy/App/Web.config"]   # URL rewrite rules
+# Code sides with no registrations of a kind, and why: trace_screen reports them under 'sides', so an
+# agent does not have to infer a missing side.  Key: "<view|report>:<net48|net8>".
+side_notes = { "report:net48" = "the net48 report catalogue is commented out: reports are registered on the net8 sides only" }
+
+[profile]
+# Columns profiled for value distributions (enum / magic-value detection).
+max_distinct_kept = 60
+sample_percent    = 5
+lookup_max_rows   = 400            # lookup tables: rows kept (and copied whole into the sandbox)
+style_recent_since = "2022-01-01"  # style phase: modules modified since then are 'recent'
+
+[limits]
+max_results_default = 50
+max_results_hard    = 500
+definition_max_lines = 400

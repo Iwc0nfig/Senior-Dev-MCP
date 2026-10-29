@@ -1,0 +1,28 @@
+[project]
+name = "senior-dev-code"
+version = "0.1.0"
+description = "Read-only, grounded MCP code advisor for legacy C#/WebForms/JS codebases (part of Senior-Dev-MCP)."
+requires-python = ">=3.12"
+dependencies = [
+  "mcp>=2.1.1,<3",
+  "tree-sitter>=0.25.0,<0.27",
+  "tree-sitter-language-pack>=1.16.1",
+  "pydantic>=2.9",
+  "tomli-w>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+senior-dev-code = "senior_dev_code.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/senior_dev_code"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

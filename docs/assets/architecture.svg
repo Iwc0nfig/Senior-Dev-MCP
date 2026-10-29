@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 560" width="1100" height="560" role="img" aria-labelledby="t d">
+  <title id="t">How Senior-Dev-MCP works</title>
+  <desc id="d">Your code and your database are indexed by two read-only MCP servers, the Code Advisor and the DB Advisor, which share one workspace. Any MCP agent asks both and gets cited answers. Writes only ever run in a sandbox clone that is rolled back.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#160f2e"/>
+    </linearGradient>
+    <linearGradient id="code" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c4a6e"/><stop offset="1" stop-color="#082f49"/>
+    </linearGradient>
+    <linearGradient id="db" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4c1d95"/><stop offset="1" stop-color="#2e1065"/>
+    </linearGradient>
+    <linearGradient id="agent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#831843"/><stop offset="1" stop-color="#500724"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .flow { fill: none; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 7 7; animation: dash 1.2s linear infinite; }
+      .flow.slow { animation-duration: 2s; }
+      @keyframes dash { to { stroke-dashoffset: -14; } }
+      .glow { animation: glow 3s ease-in-out infinite; }
+      @keyframes glow { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+    </style>
+  </defs>
+
+  <rect width="1100" height="560" rx="18" fill="url(#bg)"/>
+
+  <!-- sources -->
+  <g class="sans">
+    <rect x="30" y="70" width="230" height="150" rx="14" fill="#0f172a" stroke="#334155"/>
+    <text x="145" y="102" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0">📁 Your code</text>
+    <text x="145" y="132" text-anchor="middle" font-size="14" fill="#94a3b8">Legacy · .NET Framework</text>
+    <text x="145" y="154" text-anchor="middle" font-size="14" fill="#94a3b8">WebForms · C# · JavaScript</text>
+    <text x="145" y="184" text-anchor="middle" font-size="14" fill="#94a3b8">Modern · .NET 8 APIs</text>
+
+    <rect x="30" y="330" width="230" height="150" rx="14" fill="#0f172a" stroke="#334155"/>
+    <text x="145" y="362" text-anchor="middle" font-size="17" font-weight="700" fill="#e2e8f0">🗄️ Your database</text>
+    <text x="145" y="392" text-anchor="middle" font-size="14" fill="#94a3b8">SQL Server</text>
+    <text x="145" y="414" text-anchor="middle" font-size="14" fill="#94a3b8">tables · views · procs</text>
+    <text x="145" y="444" text-anchor="middle" font-size="14" fill="#94a3b8">read-only login</text>
+  </g>
+
+  <!-- advisors -->
+  <g class="sans">
+    <rect x="360" y="50" width="330" height="190" rx="16" fill="url(#code)" stroke="#38bdf8" stroke-width="2"/>
+    <text x="525" y="84" text-anchor="middle" font-size="19" font-weight="800" fill="#e0f2fe">🧠 Code Advisor</text>
+    <text x="525" y="104" text-anchor="middle" class="mono" font-size="12" fill="#7dd3fc">senior-dev-code · :8400 · 18 tools</text>
+    <g font-size="13.5" fill="#bae6fd">
+      <text x="384" y="134">• Roslyn compiler index (both solutions)</text>
+      <text x="384" y="156">• WebForms markup → controls → code</text>
+      <text x="384" y="178">• HTTP hops legacy → .NET 8 API</text>
+      <text x="384" y="200">• legacy ↔ new DTO twins</text>
+      <text x="384" y="222">• callers, references, dead code</text>
+    </g>
+
+    <rect x="360" y="310" width="330" height="190" rx="16" fill="url(#db)" stroke="#c084fc" stroke-width="2"/>
+    <text x="525" y="344" text-anchor="middle" font-size="19" font-weight="800" fill="#f3e8ff">🧬 DB Advisor</text>
+    <text x="525" y="364" text-anchor="middle" class="mono" font-size="12" fill="#d8b4fe">senior-dev-db · :8401 · 17 tools</text>
+    <g font-size="13.5" fill="#e9d5ff">
+      <text x="384" y="394">• schema, joins, value meanings</text>
+      <text x="384" y="416">• screen / report → SQL → C# trace</text>
+      <text x="384" y="438">• house SQL style, validate_sql</text>
+      <text x="384" y="460">• draft_change: anchored edits, diff</text>
+      <text x="384" y="482">• test_sql in a sandbox clone 🧪</text>
+    </g>
+  </g>
+
+  <!-- shared workspace link -->
+  <path d="M525 240 V310" class="flow slow" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect x="540" y="261" width="180" height="28" rx="14" fill="#0f172a" stroke="#475569"/>
+  <text x="630" y="280" text-anchor="middle" class="sans" font-size="12.5" fill="#cbd5e1">same workspace · path:line</text>
+
+  <!-- source -> advisor flows -->
+  <path id="p1" d="M260 145 H360" class="flow" marker-end="url(#arrow)"/>
+  <path id="p2" d="M260 405 H360" class="flow" marker-end="url(#arrow)"/>
+  <path d="M260 175 C310 175 310 380 360 380" class="flow slow" marker-end="url(#arrow)" opacity=".5"/>
+  <text x="310" y="132" text-anchor="middle" class="sans" font-size="12" fill="#64748b">index</text>
+  <text x="310" y="392" text-anchor="middle" class="sans" font-size="12" fill="#64748b">index</text>
+
+  <!-- agent -->
+  <g class="sans">
+    <rect x="800" y="170" width="270" height="210" rx="18" fill="url(#agent)" stroke="#f472b6" stroke-width="2"/>
+    <text x="935" y="208" text-anchor="middle" font-size="20" font-weight="800" fill="#fce7f3">🤖 Your AI agent</text>
+    <text x="935" y="232" text-anchor="middle" font-size="13" fill="#fbcfe8">any MCP client</text>
+    <g font-size="13.5" fill="#fbcfe8">
+      <text x="824" y="266">✔ cites every claim</text>
+      <text x="824" y="290">✔ says “not found”, never guesses</text>
+      <text x="824" y="314">✔ ready-to-run diff + script</text>
+      <text x="824" y="338">✔ follows AGENTS.md rules</text>
+    </g>
+  </g>
+
+  <!-- advisor <-> agent flows with travelling dots -->
+  <path id="a1" d="M690 145 C750 145 750 240 800 240" class="flow" marker-end="url(#arrow)"/>
+  <path id="a2" d="M690 405 C750 405 750 310 800 310" class="flow" marker-end="url(#arrow)"/>
+  <circle r="5" fill="#38bdf8" class="glow"><animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#a1"/></animateMotion></circle>
+  <circle r="5" fill="#c084fc" class="glow"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#a2"/></animateMotion></circle>
+  <circle r="4" fill="#7dd3fc"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+  <circle r="4" fill="#d8b4fe"><animateMotion dur="1.8s" begin=".9s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+
+  <!-- footer -->
+  <text x="550" y="34" text-anchor="middle" class="sans" font-size="15" font-weight="600" fill="#cbd5e1">Two read-only MCP servers, one shared view of your system</text>
+  <rect x="200" y="516" width="700" height="30" rx="15" fill="#052e16" stroke="#22c55e" stroke-opacity=".6"/>
+  <text x="550" y="536" text-anchor="middle" class="sans" font-size="13.5" fill="#bbf7d0">🔒 Nothing writes to your code or production DB. Writes run only in the sandbox clone, and always roll back.</text>
+</svg>

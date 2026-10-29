@@ -1,0 +1,15 @@
+{
+ "packet": "meaning-00-example",
+ "model": "claude-haiku",
+ "facts": [
+  {
+   "subject": "OrderTable.NetAmountLocal",
+   "fact_type": "meaning",
+   "text": "Order total after discounts, converted to the system currency at the order date's rate; set in usp_calcshipping and read into OrderEntity.NetAmountLocal. Sum this column, not NetAmount, across currencies.",
+   "citations": [
+    "Legacy/Legacy.Entities/Orders/OrderEntity.cs:41",
+    "usp_calcshipping:57"
+   ]
+  }
+ ]
+}

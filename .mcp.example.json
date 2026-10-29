@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "senior-dev-code": { "type": "http", "url": "http://localhost:8400/mcp" },
+    "senior-dev-db":   { "type": "http", "url": "http://localhost:8401/mcp" }
+  }
+}

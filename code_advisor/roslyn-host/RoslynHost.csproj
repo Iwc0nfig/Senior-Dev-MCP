@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net48;net8.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- Roslyn version is chosen PER TARGET FRAMEWORK, and both choices are
+         empirical, measured on this machine against the real solutions.
+
+         net48  -> 4.8.0.  From 4.9 onwards MSBuildWorkspace always loads
+                   projects through an out-of-process "BuildHost", and that path
+                   is broken here: BuildHost-net472 ships
+                   System.Threading.Tasks.Extensions 4.2.0.1 while VS 17.14's
+                   Microsoft.Build.dll binds 4.2.4.0, with no binding redirect
+                   for it, so the child process dies with a TypeLoadException on
+                   ProjectCacheService.DisposeAsync and every legacy project
+                   silently fails to load.  Repairing the payload
+                   (scripts/build-hosts.ps1) gets past the crash but the RPC then
+                   deadlocks indefinitely at 0% CPU.
+                   4.8.0 predates the BuildHost and loads MSBuild in-process,
+                   which is what plan.md 2.1 intended by "skip the build host".
+                   Measured: 8/8 projects in 13.0 s.
+
+         net8.0 -> 4.14.0.  The SDK-side BuildHost works fine.
+                   Measured: 34/40 projects in 27.4 s, 549 MB.
+
+         MSBuild packages must match the INSTALLED Visual Studio (17.14), because
+         with in-process hosting the compile-time contract has to line up with the
+         assemblies MSBuildLocator supplies at run time.  At 17.13.9 every legacy
+         project fails with
+         "Method not found: System.ReadOnlySpan<Char> Microsoft...". -->
+    <RoslynVersion Condition="'$(RoslynVersion)'=='' and '$(TargetFramework)'=='net48'">4.8.0</RoslynVersion>
+    <RoslynVersion Condition="'$(RoslynVersion)'==''">4.14.0</RoslynVersion>
+    <MSBuildPkgVersion Condition="'$(MSBuildPkgVersion)'==''">17.14.8</MSBuildPkgVersion>
+    <AssemblyName>RoslynHost</AssemblyName>
+    <RootNamespace>SeniorDevCode.RoslynHost</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <!-- MSBuildLocator requires that the *MSBuild* assemblies are not copied
+         local: they must resolve from the registered instance, not the output
+         folder.  That is achieved by ExcludeAssets="runtime" on
+         Workspaces.MSBuild below.
+         plan.md 4 additionally sets CopyLocalLockFileAssemblies=false, but that
+         is too broad: it also stops Microsoft.Build.Locator itself from being
+         copied, so the host dies at startup with
+         "Could not load file or assembly 'Microsoft.Build.Locator'". -->
+    <!-- MSBuildLocator only registers .NET SDKs whose runtime the current
+         process can host.  This machine has SDK 9.0.317 only, so a net8.0
+         process running on the 8.0.30 runtime sees "No instances of MSBuild
+         could be detected".  Rolling forward to the latest major keeps the
+         plan.md 4 target framework while letting the host see the installed SDK. -->
+    <RollForward>LatestMajor</RollForward>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.11.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(RoslynVersion)" />
+    <!-- ExcludeAssets="runtime" belongs on the Microsoft.Build.* packages, NOT
+         on Workspaces.MSBuild as plan.md 4 has it: putting it there excludes
+         Microsoft.CodeAnalysis.Workspaces.MSBuild.dll itself, and the host then
+         fails at load with FileNotFoundException for that assembly.
+         These four are the MSBuild assemblies that must come from the registered
+         instance instead of the output folder. -->
+    <PackageReference Include="Microsoft.Build" Version="$(MSBuildPkgVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MSBuildPkgVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MSBuildPkgVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MSBuildPkgVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.StringTools" Version="$(MSBuildPkgVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <!-- 9.0.0, not the 8.0.5 in plan.md 4: Workspaces.MSBuild 4.14.0 depends on
+         System.Text.Json >= 9.0.0, so 8.0.5 is a package downgrade and NU1605
+         fails the build. -->
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+</Project>
