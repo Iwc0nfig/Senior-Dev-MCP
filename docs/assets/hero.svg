@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-labelledby="t d">
   <title id="t">Senior-Dev-MCP</title>
-  <desc id="d">A senior developer for your AI agent: it knows your legacy .NET code and your SQL Server database.</desc>
+  <desc id="d">A senior developer for your AI agent: it knows ALL your code and your SQL Server database.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0b1020"/>
@@ -82,7 +82,7 @@
     <rect width="720" height="56" rx="12" fill="#020617" fill-opacity=".7" stroke="#334155"/>
     <text x="20" y="35" class="mono" font-size="17" fill="#64748b">❯</text>
     <g clip-path="url(#typeClip)">
-      <text x="44" y="35" class="mono" font-size="17" fill="#e2e8f0">knows your legacy .NET code <tspan fill="#c084fc">+</tspan> your SQL Server DB <tspan fill="#4ade80">✔ cited</tspan></text>
+      <text x="44" y="35" class="mono" font-size="17" fill="#e2e8f0">knows ALL your code <tspan fill="#c084fc">+</tspan> your SQL Server DB <tspan fill="#4ade80">✔ cited</tspan></text>
     </g>
     <rect x="44" y="18" width="10" height="22" fill="#a78bfa" class="cursor">
       <animate attributeName="x" values="44;44;644;644" keyTimes="0;0.08;0.55;1" dur="9s" repeatCount="indefinite"/>
